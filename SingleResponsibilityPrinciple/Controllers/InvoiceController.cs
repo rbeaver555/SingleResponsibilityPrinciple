@@ -11,78 +11,76 @@ namespace SingleResponsibilityPrinciple.Controllers
         public List<Invoice> _dbContext = new List<Invoice>();
 
         
+        /// <summary>
+        /// TODO: If the controller is an orchestrator, should it have the database logic within it? Is it doing more than one thing?
+        /// If it is, where would you put the database logic, and how would the controller intract with it?
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Index()
         {
-            //try
-            //{ 
-                //return _dbContext.Where(invoice.IsActive);
-            //}
-            //catch(Exception ex)
-            //{
-            //    LogError(ex);
-            //}
+            try
+            {
+                var activeInvoiceRecords = (from invoice in _dbContext
+                                            where invoice.IsActive == true
+                                            && invoice.InvoiceNumber > 0
+                                            select invoice);
+                
+                return View(activeInvoiceRecords);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex); 
 
-            //return _dbContext.Where(invoice.IsActive);
-            return View();
+                return View();
+            }            
         }
 
-        public IActionResult AddInvoice(Invoice invoice)
-        {
-            //_dbContext.Add(invoice);
-            //return _dbContext.Where(invoice.IsActive);
-
-            //try
-            //{ 
-                //_dbContext.Add(invoice);
-                //return _dbContext.Where(invoice.IsActive);
-            //}
-            //catch(Exception ex)
-            //{
-            //    LogError(ex);
-            //}
-            return View();
-        }
-
-        public IActionResult DeleteInvoice(Invoice invoice)
-        {
-            //try
-            //{ 
-                //_dbContext.Remove(invoice);
-                //return _dbContext.Where(invoice.IsActive);
-            //}
-            //catch(Exception ex)
-            //{
-            //    LogError(ex);
-            //}
-            return View();
-        }
-
+        
         public bool SendEmailNotificationForInvoice(Invoice invoice)
-        {
-            //send an email notification
-            //try
-            //{
-                //SMTPService service = new SMTPService()
-                //{
-                //    FromEmail = "noreply@srp.com",
-                //    Subject = "Your new invoice has been entered!",
-                //    Body = "Invoice Number 23243 has been....."
-                //};
-                //service.SendEmail();
-            //}
-            //catch(Exception ex)
-            //{
-            //    LogError(ex);
-            //}
+        {            
+            try
+            {               
+                SMTPService service = new SMTPService()
+                {
+                    FromEmail = "noreply@srp.com",
+                    Subject = "Your new invoice has been entered!",
+                    Body = "Invoice Number 23243 has been....."
+                };
+                service.SendEmail();
+            }
+            catch (Exception ex)
+            {
+                LogError(ex);
+                return false;
+            }
 
             return true;
         }
 
-        private void LogError()
-        { 
-            //log error here
+        /// <summary>
+        /// TODO: We have a small method here that loops over the exception and inner exceptions, throwing them to the console.
+        /// What's it's real purpose? If my controller's job is to be an orchestrator does this belong here? If not here, where?
+        /// Does this function do more than it should? 
+        /// </summary>
+        /// <param name="exceptionToLog"></param>
+        private void LogError(Exception exceptionToLog)
+        {
+            var currentException = exceptionToLog;
+
+            while(currentException != null)
+            { 
+                System.Diagnostics.Debug.WriteLine(currentException.Message);
+                System.Diagnostics.Debug.WriteLine(currentException.StackTrace);
+
+                currentException = currentException.InnerException;
+            }
         }
 
+
+        /// <summary>
+        /// TODO: Find a home for this class. Ask yourself what does it actually do? What is it's purpose? 
+        /// Where should it live so multiple controllers can use it?
+        /// </summary>
         public class Invoice
         {
             public int InvoiceNumber { get; set; }
@@ -92,5 +90,21 @@ namespace SingleResponsibilityPrinciple.Controllers
             public bool IsActive { get; set; }
         }
 
+        /// <summary>
+        /// TODO: Does this class do just one thing well? Should it live in the controller? If not the controller than where?
+        /// </summary>
+        private class SMTPService
+        {
+            public string FromEmail { get; set; }
+            public string Subject { get; set; }
+            public string Body { get; set; }
+
+            public bool SendEmail()
+            {
+                //logic to send email here
+
+                return true;
+            }
+        }
     }
 }
