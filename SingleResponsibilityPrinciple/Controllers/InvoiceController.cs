@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InvoiceActions;
+using InvoiceDefinition;
 
 namespace SingleResponsibilityPrinciple.Controllers
 {
@@ -20,42 +22,17 @@ namespace SingleResponsibilityPrinciple.Controllers
         {
             try
             {
-                var activeInvoiceRecords = (from invoice in _dbContext
-                                            where invoice.IsActive == true
-                                            && invoice.InvoiceNumber > 0
-                                            select invoice);
-
-                return View(activeInvoiceRecords);
+                return (View(InvoiceActions.returnAllInvoices.activeInvoiceRecords(_dbContext)));
             }
             catch (Exception ex)
             {
                 LogError(ex);
-
                 return View();
             }
         }
-// the Index method seems way too busy. This should be a much more simple "show all method" this "IsActive" should be in the view?
+        // the Index method seems way too busy. This should be a much more simple "show all method" this "IsActive" should be in the view?
 
-        public bool SendEmailNotificationForInvoice(Invoice invoice)
-        {
-            try
-            {
-                SMTPService service = new SMTPService()
-                {
-                    FromEmail = "noreply@srp.com",
-                    Subject = "Your new invoice has been entered!",
-                    Body = "Invoice Number 23243 has been....."
-                };
-                service.SendEmail();
-            }
-            catch (Exception ex)
-            {
-                LogError(ex);
-                return false;
-            }
 
-            return true;
-        }
 
         // all of the above needs to live somewhere else this controller is way too busy
 
@@ -69,7 +46,7 @@ namespace SingleResponsibilityPrinciple.Controllers
         {
             var currentException = exceptionToLog;
 
-            while(currentException != null)
+            while (currentException != null)
             {
                 System.Diagnostics.Debug.WriteLine(currentException.Message);
                 System.Diagnostics.Debug.WriteLine(currentException.StackTrace);
@@ -77,37 +54,18 @@ namespace SingleResponsibilityPrinciple.Controllers
                 currentException = currentException.InnerException;
             }
         }
-// should this be a Partial? this log error should like in it's own file which can be shared or as part of an Error collection
+        // should this be a Partial? this log error should like in it's own file which can be shared or as part of an Error collection
 
         /// <summary>
         /// TODO: Find a home for this class. Ask yourself what does it actually do? What is it's purpose?
         /// Where should it live so multiple controllers can use it?
         /// </summary>
-        public class Invoice
-        {
-            public int InvoiceNumber { get; set; }
-            public decimal InvoiceAmount { get; set; }
-            public string Requester { get; set; }
-            public string RequesterEmail { get; set; }
-            public bool IsActive { get; set; }
-        }
-// this should be a model that lives with the other models
+
+        // this should be a model that lives with the other models
         /// <summary>
         /// TODO: Does this class do just one thing well? Should it live in the controller? If not the controller than where?
         /// </summary>
-        private class SMTPService
-        {
-            public string FromEmail { get; set; }
-            public string Subject { get; set; }
-            public string Body { get; set; }
 
-            public bool SendEmail()
-            {
-                //logic to send email here
-
-                return true;
-                // this should be 1. a model and 2. where all of the other email SMTP logic should live? 
-            }
-        }
     }
+}
 }
