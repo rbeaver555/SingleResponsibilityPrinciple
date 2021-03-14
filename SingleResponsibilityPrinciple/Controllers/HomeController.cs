@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SingleResponsibilityPrinciple.Models;
+using SingleResponsibilityPrinciple.Repository;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,6 +21,9 @@ namespace SingleResponsibilityPrinciple.Controllers
 
         public IActionResult Index()
         {
+            InvoiceDatabaseManager invoiceDBManager = new InvoiceDatabaseManager();
+            var activeInvoiceRecords = invoiceDBManager.GetAllActiveInvoices();
+
             return View();
         }
 
