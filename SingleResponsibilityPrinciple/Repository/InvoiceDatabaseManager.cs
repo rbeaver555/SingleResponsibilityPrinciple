@@ -20,5 +20,17 @@ namespace SingleResponsibilityPrinciple.Repository
 
             return activeInvoiceRecords;
         }
+
+        public IEnumerable<Invoice> GetAllActiveInvoicesOverAmount(decimal amount)
+        {
+
+            var activeInvoiceRecords = (from invoice in _dbContext
+                                        where invoice.IsActive == true
+                                        && invoice.InvoiceNumber > 0
+                                        && invoice.InvoiceAmount > amount
+                                        select invoice);
+
+            return activeInvoiceRecords;
+        }
     }
 }
